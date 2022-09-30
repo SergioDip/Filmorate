@@ -13,8 +13,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FilmControllerTest {
 
-	FilmController fc = new FilmController();
-	Film film;
+	private final FilmController fc = new FilmController();
+	protected Film film;
 
 	@BeforeEach
 	void createFilm() {

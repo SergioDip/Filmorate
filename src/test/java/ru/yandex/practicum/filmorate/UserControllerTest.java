@@ -13,8 +13,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UserControllerTest {
 
-	UserController uc = new UserController();
-	User user;
+	private final UserController uc = new UserController();
+	protected User user;
 
 	@BeforeEach
 	void createUser() {
