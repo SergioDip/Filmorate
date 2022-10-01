@@ -15,8 +15,8 @@ import java.util.Map;
 @RequestMapping("/users")
 public class UserController {
 
-	static int id;
-	private Map<Integer, User> users = new HashMap<>();
+	private static int id = 0;
+	private final Map<Integer, User> users = new HashMap<>();
 
 	private int generateId() {
 		return ++id;
@@ -52,16 +52,16 @@ public class UserController {
 
 	@PostMapping
 	public User createUser(@RequestBody User user) throws ValidationException {
-		log.info("Получен Post Запрос");
+		log.info("Получен Post Запрос " + user.toString());
 		User approveUser = validationUser(user);
 		user.setId(generateId());
-		users.put(user.getId(), user);
-		return user;
+		users.put(approveUser.getId(), approveUser);
+		return approveUser;
 	}
 
 	@PutMapping
 	public User updateUser(@RequestBody User user) throws ValidationException {
-		log.info("Получен Put Запрос");
+		log.info("Получен Put Запрос " + user.toString());
 		if (user.getId() <= 0) {
 			throw new ValidationException("Id должно быть больше 0");
 		}
