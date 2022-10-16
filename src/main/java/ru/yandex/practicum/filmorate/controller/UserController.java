@@ -1,72 +1,63 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.time.LocalDate;
+import javax.validation.Valid;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
-@Slf4j
 @RestController
-@RequestMapping("/users")
+@Data
 public class UserController {
+	private final UserService userService;
 
-	private static int id = 0;
-	private final Map<Integer, User> users = new HashMap<>();
-
-	private int generateId() {
-		return ++id;
+	@Autowired
+	public UserController(UserService userService) {
+		this.userService = userService;
 	}
 
-	private User validationUser(User user) throws ValidationException {
-		if (user.getEmail().isEmpty()) {
-			throw new ValidationException("E-mail должен быть заполнен");
-		}
-		if (!user.getEmail().contains("@")) {
-			throw new ValidationException("E-mail должен содержать @");
-		}
-		if (user.getLogin().isEmpty()) {
-			throw new ValidationException("Логин должен быть заполнен");
-		}
-		if (user.getLogin().contains(" ")) {
-			throw new ValidationException("Логин не должен содержать пробелы");
-		}
-		if (user.getBirthday().isAfter(LocalDate.now())) {
-			throw new ValidationException("Дата рождения не корректна");
-		}
-		if (user.getName() == null || user.getName().isBlank()) {
-			user.setName(user.getLogin());
-		}
-		return user;
-	}
-
-	@GetMapping
+	@GetMapping("/users")
 	public Collection<User> findAll() {
-		log.info("Получен Get Запрос");
-		return users.values();
+		return userService.findAll();
 	}
 
-	@PostMapping
-	public User createUser(@RequestBody User user) throws ValidationException {
-		log.info("Получен Post Запрос " + user.toString());
-		User approveUser = validationUser(user);
-		user.setId(generateId());
-		users.put(approveUser.getId(), approveUser);
-		return approveUser;
+	@GetMapping("/users/{id}")
+	public User getUserById(@PathVariable("id") long id) {
+		return userService.getUserById(id);
 	}
 
-	@PutMapping
-	public User updateUser(@RequestBody User user) throws ValidationException {
-		log.info("Получен Put Запрос " + user.toString());
-		if (user.getId() <= 0) {
-			throw new ValidationException("Id должно быть больше 0");
-		}
-		User approveUser = validationUser(user);
-		users.put(approveUser.getId(), approveUser);
-		return approveUser;
+	@PostMapping("/users")
+	public User createUser(@RequestBody @Valid User user) {
+		return userService.createUser(user);
 	}
+
+	@PutMapping("/users")
+	public User updateUser(@RequestBody @Valid User user) {
+		return userService.updateUser(user);
+	}
+
+	@PutMapping("/users/{id}/friends/{friendId}")
+	public User addFriends(@PathVariable long id, @PathVariable long friendId) {
+		return userService.addFriend(id, friendId);
+	}
+
+	@DeleteMapping("/users/{id}/friends/{friendId}")
+	public User deleteUser(@PathVariable long id, @PathVariable long friendId) {
+		return userService.deleteFriend(id, friendId);
+	}
+
+	@GetMapping("/users/{id}/friends")
+	public List<User> getAllFriends(@PathVariable long id) {
+		return userService.getFriends(id);
+	}
+
+	@GetMapping("GET /users/{id}/friends/common/{otherId}")
+	public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
+		return userService.getCommonFriends(id, otherId);
+	}
+
 }
